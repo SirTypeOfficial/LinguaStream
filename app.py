@@ -57,6 +57,7 @@ st.markdown("""
 st.markdown("""
 <link rel="stylesheet" href="static/css/audio_recorder.css">
 <script src="static/js/audio_recorder.js"></script>
+<script src="static/js/streamlit_audio_recorder.js"></script>
 """, unsafe_allow_html=True)
 
 # کلاس اصلی برنامه
@@ -102,7 +103,63 @@ class LinguaStreamApp:
             
             with col1:
                 if st.button("✅ اجازه دسترسی میکروفن", type="primary", key="grant_permission"):
-                    # تست دسترسی میکروفن با استفاده از st.audio
+                    # استفاده از st.components.v1 برای اجرای JavaScript
+                    st.markdown("""
+                    <div id="microphone-permission-container">
+                        <script>
+                        // درخواست دسترسی میکروفن
+                        async function requestMicrophoneAccess() {
+                            try {
+                                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                                    throw new Error('مرورگر شما از ضبط صدا پشتیبانی نمی‌کند');
+                                }
+                                
+                                const stream = await navigator.mediaDevices.getUserMedia({
+                                    audio: {
+                                        sampleRate: 16000,
+                                        channelCount: 1,
+                                        echoCancellation: true,
+                                        noiseSuppression: true,
+                                        autoGainControl: true
+                                    }
+                                });
+                                
+                                // ذخیره وضعیت دسترسی
+                                localStorage.setItem('microphonePermission', 'granted');
+                                
+                                // توقف stream (فقط برای تست دسترسی)
+                                stream.getTracks().forEach(track => track.stop());
+                                
+                                // نمایش پیام موفقیت
+                                const container = document.getElementById('microphone-permission-container');
+                                container.innerHTML = '<div style="color: green; font-weight: bold;">✅ دسترسی میکروفن تأیید شد!</div>';
+                                
+                                return true;
+                            } catch (error) {
+                                console.error('Error accessing microphone:', error);
+                                const container = document.getElementById('microphone-permission-container');
+                                container.innerHTML = '<div style="color: red; font-weight: bold;">❌ خطا در دسترسی به میکروفن: ' + error.message + '</div>';
+                                return false;
+                            }
+                        }
+                        
+                        // اجرای درخواست دسترسی
+                        requestMicrophoneAccess();
+                        </script>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # بررسی دسترسی از طریق localStorage
+                    st.markdown("""
+                    <script>
+                    // بررسی وضعیت دسترسی
+                    if (localStorage.getItem('microphonePermission') === 'granted') {
+                        console.log('Microphone permission already granted');
+                    }
+                    </script>
+                    """, unsafe_allow_html=True)
+                    
+                    # تأیید دسترسی در session state
                     st.session_state.mic_permission_granted = True
                     st.success("✅ دسترسی میکروفن تأیید شد! حالا می‌توانید ضبط کنید.")
                     st.rerun()
@@ -120,6 +177,11 @@ class LinguaStreamApp:
             2. مرورگر از شما اجازه دسترسی به میکروفن را می‌خواهد
             3. روی "Allow" یا "اجازه" کلیک کنید
             4. حالا می‌توانید شروع به ضبط کنید
+            
+            **نکته:** اگر مرورگر درخواست دسترسی نکرد، لطفاً:
+            - مطمئن شوید که سایت از HTTPS اجرا می‌شود
+            - تنظیمات حریم خصوصی مرورگر را بررسی کنید
+            - مرورگر را مجدداً بارگذاری کنید
             """)
             
             return False
@@ -151,6 +213,123 @@ class LinguaStreamApp:
         """نمایش رابط کاربری ضبط ساده"""
         st.markdown("### 🎤 ضبط صدا")
         
+        # اضافه کردن کامپوننت ضبط صدا با JavaScript بهبود یافته
+        st.markdown("""
+        <div id="audio-recorder-container" style="margin: 20px 0;">
+            <div style="text-align: center; margin: 20px 0;">
+                <button id="recordBtn" onclick="startWebRecording()" 
+                        style="background: #ff4444; color: white; border: none; 
+                               padding: 15px 30px; border-radius: 50px; font-size: 18px; 
+                               cursor: pointer; margin: 10px;">
+                    🎤 شروع ضبط
+                </button>
+                <button id="stopBtn" onclick="stopWebRecording()" 
+                        style="background: #666; color: white; border: none; 
+                               padding: 15px 30px; border-radius: 50px; font-size: 18px; 
+                               cursor: pointer; margin: 10px; display: none;">
+                    ⏹️ توقف ضبط
+                </button>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <div id="recordingStatus" style="font-size: 16px; color: #666;">
+                    آماده برای ضبط
+                </div>
+                <div id="recordingTimer" style="font-size: 24px; font-weight: bold; margin: 10px 0;">
+                    00:00
+                </div>
+            </div>
+            
+            <div style="width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 20px 0;">
+                <div id="audioLevelBar" style="height: 100%; background: linear-gradient(to right, #4CAF50, #FFC107, #F44336); 
+                                            border-radius: 10px; width: 0%; transition: width 0.1s;">
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        // بررسی دسترسی میکروفن هنگام بارگذاری صفحه
+        window.addEventListener('load', async () => {
+            try {
+                // بررسی پشتیبانی مرورگر
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.error('مرورگر شما از ضبط صدا پشتیبانی نمی‌کند');
+                    document.getElementById('recordingStatus').textContent = '❌ مرورگر شما از ضبط صدا پشتیبانی نمی‌کند';
+                    document.getElementById('recordingStatus').style.color = '#f44336';
+                    return;
+                }
+                
+                // بررسی دسترسی قبلی
+                const permission = localStorage.getItem('microphonePermission');
+                if (permission === 'granted') {
+                    console.log('دسترسی میکروفن قبلاً تأیید شده است');
+                    document.getElementById('recordingStatus').textContent = '✅ آماده برای ضبط - دسترسی میکروفن تأیید شده';
+                    document.getElementById('recordingStatus').style.color = '#4CAF50';
+                } else {
+                    console.log('دسترسی میکروفن هنوز تأیید نشده است');
+                    document.getElementById('recordingStatus').textContent = '⚠️ ابتدا دسترسی میکروفن را تأیید کنید';
+                    document.getElementById('recordingStatus').style.color = '#ff9800';
+                }
+            } catch (error) {
+                console.error('Error checking microphone permission:', error);
+            }
+        });
+        
+        // تابع شروع ضبط
+        async function startWebRecording() {
+            try {
+                const success = await window.streamlitAudioRecorder.startRecording();
+                if (success) {
+                    document.getElementById('recordBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-block';
+                    document.getElementById('recordingStatus').textContent = 'در حال ضبط...';
+                    document.getElementById('recordingStatus').style.color = '#ff4444';
+                } else {
+                    alert('خطا در شروع ضبط: دسترسی به میکروفن رد شد');
+                }
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('خطا در شروع ضبط: ' + error.message);
+            }
+        }
+        
+        // تابع توقف ضبط
+        async function stopWebRecording() {
+            try {
+                const audioBlob = await window.streamlitAudioRecorder.stopRecording();
+                if (audioBlob) {
+                    document.getElementById('recordBtn').style.display = 'inline-block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                    document.getElementById('recordingStatus').textContent = 'پردازش صدا...';
+                    document.getElementById('recordingStatus').style.color = '#ff9800';
+                    
+                    // پردازش فایل صوتی
+                    const result = await window.streamlitAudioRecorder.processRecordedAudio(audioBlob);
+                    
+                    if (result.success) {
+                        document.getElementById('recordingStatus').textContent = '✅ متن تشخیص داده شد';
+                        document.getElementById('recordingStatus').style.color = '#4CAF50';
+                        
+                        // نمایش متن تشخیص داده شده
+                        const resultContainer = document.querySelector('.transcribed-text');
+                        if (resultContainer) {
+                            resultContainer.textContent = result.transcription;
+                        }
+                    } else {
+                        document.getElementById('recordingStatus').textContent = '❌ خطا در پردازش';
+                        document.getElementById('recordingStatus').style.color = '#f44336';
+                    }
+                }
+            } catch (error) {
+                console.error('Error stopping recording:', error);
+                alert('خطا در توقف ضبط: ' + error.message);
+            }
+        }
+        </script>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
         # روش اول: آپلود فایل صوتی
         st.markdown("#### روش ۱: آپلود فایل صوتی")
         uploaded_file = st.file_uploader(
@@ -163,42 +342,6 @@ class LinguaStreamApp:
             # پردازش فایل آپلود شده
             if st.button("🔄 پردازش فایل صوتی", type="primary"):
                 self.process_uploaded_file(uploaded_file)
-        
-        st.markdown("---")
-        
-        # روش دوم: ضبط با دکمه‌ها (شبیه‌سازی)
-        st.markdown("#### روش ۲: ضبط صدا (شبیه‌سازی)")
-        st.info("💡 برای ضبط واقعی، از روش اول استفاده کنید یا از نرم‌افزارهای ضبط صدا استفاده کنید.")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("🎤 شروع ضبط", type="primary", disabled=st.session_state.get('is_recording', False)):
-                st.session_state.is_recording = True
-                st.session_state.recording_start_time = time.time()
-                st.success("🎤 ضبط شروع شد! (شبیه‌سازی)")
-                st.rerun()
-        
-        with col2:
-            if st.button("⏹️ توقف ضبط", disabled=not st.session_state.get('is_recording', False)):
-                st.session_state.is_recording = False
-                st.success("⏹️ ضبط متوقف شد!")
-                st.rerun()
-        
-        with col3:
-            if st.button("🔄 پردازش صوتی", disabled=st.session_state.get('is_recording', False)):
-                self.process_recorded_audio()
-        
-        # نمایش وضعیت ضبط
-        if st.session_state.get('is_recording', False):
-            st.markdown('<div class="status-box recording-status">🔴 در حال ضبط... (شبیه‌سازی)</div>', unsafe_allow_html=True)
-            
-            # نمایش مدت زمان ضبط
-            if 'recording_start_time' in st.session_state:
-                elapsed_time = time.time() - st.session_state.recording_start_time
-                st.write(f"⏱️ مدت زمان ضبط: {elapsed_time:.1f} ثانیه")
-        else:
-            st.markdown('<div class="status-box ready-status">⏸️ آماده برای ضبط</div>', unsafe_allow_html=True)
     
     def process_uploaded_file(self, uploaded_file):
         """پردازش فایل آپلود شده"""

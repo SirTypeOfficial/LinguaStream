@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+مگر اینکه صراحتاً درخواست شود:
+- هیچگاه فایل تست نساز
+- هیچگاه راهنمای استفاده (Usage Guide یا README) ایجاد نکن
+- فقط روی پیاده‌سازی اصلی کد تمرکز کن
+
+Unless explicitly requested:
+- Do NOT create test files
+- Do NOT create usage guides, examples, or README documentation
+- Focus only on the core implementation

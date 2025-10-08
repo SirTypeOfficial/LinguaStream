@@ -36,8 +36,50 @@ def handle_microphone_permission():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-@api_app.route('/api/process-audio', methods=['POST'])
+@api_app.route('/api/process_audio', methods=['POST'])
 def process_audio():
+    """پردازش فایل صوتی ضبط شده از مرورگر"""
+    try:
+        # بررسی وجود فایل صوتی
+        if 'audio' not in request.files:
+            return jsonify({'success': False, 'error': 'فایل صوتی یافت نشد'})
+        
+        audio_file = request.files['audio']
+        if audio_file.filename == '':
+            return jsonify({'success': False, 'error': 'فایل صوتی انتخاب نشده'})
+        
+        # راه‌اندازی کامپوننت‌ها
+        initialize_api_components()
+        
+        # پردازش فایل صوتی
+        audio_data = audio_handler.process_uploaded_audio(audio_file)
+        
+        if audio_data is None:
+            return jsonify({'success': False, 'error': 'خطا در پردازش فایل صوتی'})
+        
+        # بررسی حداقل مدت زمان صوتی
+        duration = len(audio_data) / 16000
+        if duration < 0.5:  # حداقل 0.5 ثانیه
+            return jsonify({'success': False, 'error': 'مدت زمان صوتی کافی نیست'})
+        
+        # تشخیص گفتار
+        transcribed_text = stt_engine.transcribe(audio_data)
+        
+        if transcribed_text:
+            return jsonify({
+                'success': True,
+                'transcription': transcribed_text,
+                'duration': duration,
+                'file_size': len(audio_data)
+            })
+        else:
+            return jsonify({'success': False, 'error': 'هیچ متنی تشخیص داده نشد'})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@api_app.route('/api/process-audio', methods=['POST'])
+def process_uploaded_audio():
     """پردازش فایل صوتی آپلود شده"""
     try:
         # بررسی وجود فایل صوتی
