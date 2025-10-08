@@ -4,11 +4,12 @@ torchaudio
 transformers
 openai-whisper
 streamlit
-pyaudio
 numpy
 scipy
 librosa
 soundfile
+pydub
+flask
 
 # وابستگی‌های اضافی برای فاز اول
 # wave, tempfile, threading, io, os, time ماژول‌های built-in هستند

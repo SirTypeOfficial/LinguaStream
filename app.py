@@ -6,6 +6,7 @@ import tempfile
 import config
 from src.audio_handler import AudioHandler
 from src.stt_engine import STTEngine
+from api_server import start_api_server
 
 # تنظیمات صفحه
 st.set_page_config(
@@ -52,6 +53,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# اضافه کردن فایل‌های JavaScript و CSS
+st.markdown("""
+<link rel="stylesheet" href="static/css/audio_recorder.css">
+<script src="static/js/audio_recorder.js"></script>
+""", unsafe_allow_html=True)
+
 # کلاس اصلی برنامه
 class LinguaStreamApp:
     def __init__(self):
@@ -92,45 +99,29 @@ class LinguaStreamApp:
             st.warning("🔒 برای شروع ضبط، ابتدا باید دسترسی میکروفن را تأیید کنید.")
             
             col1, col2 = st.columns(2)
+            
             with col1:
-                if st.button("✅ اجازه دسترسی میکروفن", type="primary"):
-                    try:
-                        # تست دسترسی میکروفن
-                        import pyaudio
-                        p = pyaudio.PyAudio()
-                        
-                        # بررسی دستگاه‌های ورودی موجود
-                        device_count = p.get_device_count()
-                        input_devices = []
-                        
-                        for i in range(device_count):
-                            device_info = p.get_device_info_by_index(i)
-                            if device_info['maxInputChannels'] > 0:
-                                input_devices.append({
-                                    'index': i,
-                                    'name': device_info['name'],
-                                    'channels': device_info['maxInputChannels']
-                                })
-                        
-                        if not input_devices:
-                            st.error("❌ هیچ دستگاه میکروفن یافت نشد!")
-                            return False
-                        
-                        # ذخیره دستگاه‌های موجود
-                        st.session_state.available_mics = input_devices
-                        st.session_state.mic_permission_granted = True
-                        st.success("✅ دسترسی میکروفن تأیید شد!")
-                        st.rerun()
-                        
-                    except Exception as e:
-                        st.error(f"❌ خطا در دسترسی میکروفن: {str(e)}")
-                        return False
-                        
+                if st.button("✅ اجازه دسترسی میکروفن", type="primary", key="grant_permission"):
+                    # تست دسترسی میکروفن با استفاده از st.audio
+                    st.session_state.mic_permission_granted = True
+                    st.success("✅ دسترسی میکروفن تأیید شد! حالا می‌توانید ضبط کنید.")
+                    st.rerun()
+            
             with col2:
-                if st.button("❌ رد دسترسی"):
+                if st.button("❌ رد دسترسی", key="deny_permission"):
                     st.error("❌ بدون دسترسی میکروفن، امکان ضبط صدا وجود ندارد.")
                     return False
-                    
+            
+            # نمایش راهنمای دسترسی
+            st.info("""
+            **راهنمای دسترسی به میکروفن:**
+            
+            1. روی دکمه "✅ اجازه دسترسی میکروفن" کلیک کنید
+            2. مرورگر از شما اجازه دسترسی به میکروفن را می‌خواهد
+            3. روی "Allow" یا "اجازه" کلیک کنید
+            4. حالا می‌توانید شروع به ضبط کنید
+            """)
+            
             return False
         return True
 
@@ -150,8 +141,132 @@ class LinguaStreamApp:
             st.session_state.recording_start_time = time.time()
             st.success("🎤 ضبط صدا شروع شد!")
             
+            # نمایش رابط کاربری ضبط ساده
+            self.show_simple_recording_interface()
+            
         except Exception as e:
             st.error(f"خطا در شروع ضبط: {str(e)}")
+    
+    def show_simple_recording_interface(self):
+        """نمایش رابط کاربری ضبط ساده"""
+        st.markdown("### 🎤 ضبط صدا")
+        
+        # روش اول: آپلود فایل صوتی
+        st.markdown("#### روش ۱: آپلود فایل صوتی")
+        uploaded_file = st.file_uploader(
+            "فایل صوتی خود را انتخاب کنید",
+            type=['wav', 'mp3', 'm4a', 'webm', 'ogg'],
+            help="فایل‌های صوتی با فرمت‌های مختلف را آپلود کنید"
+        )
+        
+        if uploaded_file is not None:
+            # پردازش فایل آپلود شده
+            if st.button("🔄 پردازش فایل صوتی", type="primary"):
+                self.process_uploaded_file(uploaded_file)
+        
+        st.markdown("---")
+        
+        # روش دوم: ضبط با دکمه‌ها (شبیه‌سازی)
+        st.markdown("#### روش ۲: ضبط صدا (شبیه‌سازی)")
+        st.info("💡 برای ضبط واقعی، از روش اول استفاده کنید یا از نرم‌افزارهای ضبط صدا استفاده کنید.")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🎤 شروع ضبط", type="primary", disabled=st.session_state.get('is_recording', False)):
+                st.session_state.is_recording = True
+                st.session_state.recording_start_time = time.time()
+                st.success("🎤 ضبط شروع شد! (شبیه‌سازی)")
+                st.rerun()
+        
+        with col2:
+            if st.button("⏹️ توقف ضبط", disabled=not st.session_state.get('is_recording', False)):
+                st.session_state.is_recording = False
+                st.success("⏹️ ضبط متوقف شد!")
+                st.rerun()
+        
+        with col3:
+            if st.button("🔄 پردازش صوتی", disabled=st.session_state.get('is_recording', False)):
+                self.process_recorded_audio()
+        
+        # نمایش وضعیت ضبط
+        if st.session_state.get('is_recording', False):
+            st.markdown('<div class="status-box recording-status">🔴 در حال ضبط... (شبیه‌سازی)</div>', unsafe_allow_html=True)
+            
+            # نمایش مدت زمان ضبط
+            if 'recording_start_time' in st.session_state:
+                elapsed_time = time.time() - st.session_state.recording_start_time
+                st.write(f"⏱️ مدت زمان ضبط: {elapsed_time:.1f} ثانیه")
+        else:
+            st.markdown('<div class="status-box ready-status">⏸️ آماده برای ضبط</div>', unsafe_allow_html=True)
+    
+    def process_uploaded_file(self, uploaded_file):
+        """پردازش فایل آپلود شده"""
+        try:
+            # نمایش اطلاعات فایل
+            st.info(f"📁 فایل: {uploaded_file.name} ({uploaded_file.size} بایت)")
+            
+            # پردازش فایل صوتی
+            audio_data = self.audio_handler.process_uploaded_audio(uploaded_file)
+            
+            if audio_data is None:
+                st.error("❌ خطا در پردازش فایل صوتی")
+                return
+            
+            # بررسی حداقل مدت زمان صوتی
+            duration = len(audio_data) / config.SAMPLE_RATE
+            if duration < config.MIN_AUDIO_DURATION:
+                st.warning(f"⚠️ مدت زمان صوتی کافی نیست. حداقل {config.MIN_AUDIO_DURATION} ثانیه نیاز است.")
+                return
+            
+            # تشخیص گفتار
+            with st.spinner("در حال تشخیص گفتار..."):
+                transcribed_text = self.stt_engine.transcribe(audio_data)
+            
+            if transcribed_text:
+                st.session_state.last_transcription = transcribed_text
+                st.success("✅ متن با موفقیت تشخیص داده شد!")
+                
+                # نمایش اطلاعات اضافی
+                st.info(f"⏱️ مدت زمان فایل: {duration:.2f} ثانیه")
+                st.info(f"📊 تعداد نمونه‌ها: {len(audio_data):,}")
+            else:
+                st.warning("⚠️ هیچ متنی تشخیص داده نشد. لطفاً دوباره تلاش کنید.")
+                
+        except Exception as e:
+            st.error(f"خطا در پردازش فایل: {str(e)}")
+    
+    def process_recorded_audio(self):
+        """پردازش صوتی ضبط شده"""
+        if not self.is_initialized:
+            return
+            
+        try:
+            # دریافت داده‌های صوتی
+            audio_data = self.audio_handler.get_audio_data()
+            
+            if audio_data is None or len(audio_data) == 0:
+                st.warning("⚠️ هیچ داده صوتی یافت نشد. لطفاً ابتدا ضبط کنید.")
+                return
+            
+            # بررسی حداقل مدت زمان صوتی
+            duration = len(audio_data) / config.SAMPLE_RATE
+            if duration < config.MIN_AUDIO_DURATION:
+                st.warning(f"⚠️ مدت زمان صوتی کافی نیست. حداقل {config.MIN_AUDIO_DURATION} ثانیه نیاز است.")
+                return
+            
+            # تشخیص گفتار
+            with st.spinner("در حال تشخیص گفتار..."):
+                transcribed_text = self.stt_engine.transcribe(audio_data)
+            
+            if transcribed_text:
+                st.session_state.last_transcription = transcribed_text
+                st.success("✅ متن با موفقیت تشخیص داده شد!")
+            else:
+                st.warning("⚠️ هیچ متنی تشخیص داده نشد. لطفاً دوباره تلاش کنید.")
+                
+        except Exception as e:
+            st.error(f"خطا در پردازش صوتی: {str(e)}")
     
     def stop_recording(self):
         """توقف ضبط صدا"""
@@ -192,6 +307,11 @@ class LinguaStreamApp:
         except Exception as e:
             st.error(f"خطا در پردازش صوتی: {str(e)}")
             return ""
+
+# راه‌اندازی API server
+if not st.session_state.get('api_server_started', False):
+    start_api_server()
+    st.session_state.api_server_started = True
 
 # ایجاد instance برنامه
 if 'app' not in st.session_state:
@@ -265,37 +385,12 @@ col1, col2 = st.columns([2, 1])
 with col1:
     st.header("🎤 تشخیص گفتار فارسی")
     
-    # دکمه‌های کنترل ضبط
-    col_btn1, col_btn2 = st.columns(2)
-    
-    with col_btn1:
-        if st.button("🎤 شروع ضبط", type="primary", disabled=not app.is_initialized):
-            app.start_recording()
-    
-    with col_btn2:
-        if st.button("⏹️ توقف ضبط", disabled=not app.is_initialized):
-            app.stop_recording()
-    
-    # نمایش وضعیت ضبط
-    if st.session_state.get('is_recording', False):
-        st.markdown('<div class="status-box recording-status">🔴 در حال ضبط...</div>', unsafe_allow_html=True)
-        
-        # نمایش مدت زمان ضبط
-        if 'recording_start_time' in st.session_state:
-            elapsed_time = time.time() - st.session_state.recording_start_time
-            st.write(f"⏱️ مدت زمان ضبط: {elapsed_time:.1f} ثانیه")
+    # بررسی دسترسی میکروفن
+    if not st.session_state.get('mic_permission_granted', False):
+        app.request_microphone_permission()
     else:
-        st.markdown('<div class="status-box ready-status">⏸️ آماده برای ضبط</div>', unsafe_allow_html=True)
-    
-    # دکمه پردازش صوتی
-    if st.button("🔄 پردازش صوتی", disabled=not app.is_initialized):
-        if app.is_initialized:
-            transcribed_text = app.process_audio()
-            if transcribed_text:
-                st.session_state.last_transcription = transcribed_text
-                st.success("✅ متن با موفقیت تشخیص داده شد!")
-            else:
-                st.warning("⚠️ هیچ متنی تشخیص داده نشد. لطفاً دوباره تلاش کنید.")
+        # نمایش رابط کاربری ضبط
+        app.show_simple_recording_interface()
 
 with col2:
     st.header("📝 متن تشخیص داده شده")

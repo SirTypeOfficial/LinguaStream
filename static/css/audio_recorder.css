@@ -1,0 +1,226 @@
+/* استایل‌های سفارشی برای رابط کاربری ضبط صدا */
+
+.audio-recorder-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin: 2rem 0;
+}
+
+.recording-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.record-button {
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+}
+
+.record-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+}
+
+.record-button:disabled {
+    background: #ddd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.stop-button {
+    background: #2ed573;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+}
+
+.stop-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(46, 213, 115, 0.6);
+}
+
+.stop-button:disabled {
+    background: #ddd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.audio-level-meter {
+    width: 300px;
+    height: 20px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.audio-level-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2ed573 0%, #ffa502 50%, #ff4757 100%);
+    width: 0%;
+    transition: width 0.1s ease;
+    border-radius: 10px;
+}
+
+.recording-status {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.status-ready {
+    background: rgba(46, 213, 115, 0.2);
+    color: #2ed573;
+    border: 2px solid #2ed573;
+}
+
+.status-recording {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    border: 2px solid #ff4757;
+    animation: pulse 1.5s infinite;
+}
+
+.status-processing {
+    background: rgba(255, 165, 2, 0.2);
+    color: #ffa502;
+    border: 2px solid #ffa502;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.recording-timer {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 1rem 0;
+}
+
+.permission-request {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    margin: 2rem 0;
+    backdrop-filter: blur(10px);
+}
+
+.permission-button {
+    background: #3742fa;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0.5rem;
+}
+
+.permission-button:hover {
+    background: #2f3542;
+    transform: translateY(-2px);
+}
+
+.error-message {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #ff4757;
+    margin: 1rem 0;
+}
+
+.success-message {
+    background: rgba(46, 213, 115, 0.2);
+    color: #2ed573;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #2ed573;
+    margin: 1rem 0;
+}
+
+.transcription-result {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    margin: 2rem 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    direction: rtl;
+    text-align: right;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    min-height: 100px;
+}
+
+.processing-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .audio-recorder-container {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .recording-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .record-button, .stop-button {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .audio-level-meter {
+        width: 250px;
+    }
+    
+    .recording-timer {
+        font-size: 1.5rem;
+    }
+}
