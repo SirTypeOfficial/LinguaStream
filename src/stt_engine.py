@@ -12,11 +12,38 @@ import numpy as np
 import os
 import tempfile
 import soundfile as sf
+import re
 
 class STTEngine:
     def __init__(self):
         self.model = None
         self.model_loaded = False
+        self.tone_patterns = {
+            'question': [
+                r'آیا\s+.*\?',
+                r'چرا\s+.*\?',
+                r'چطور\s+.*\?',
+                r'کجا\s+.*\?',
+                r'کی\s+.*\?',
+                r'چه\s+.*\?',
+                r'مگه\s+.*\?',
+                r'.*\?$'
+            ],
+            'exclamation': [
+                r'وای\s+.*!',
+                r'آه\s+.*!',
+                r'اوه\s+.*!',
+                r'.*!$'
+            ],
+            'command': [
+                r'بکن\s+.*',
+                r'کن\s+.*',
+                r'برو\s+.*',
+                r'بیا\s+.*',
+                r'بده\s+.*',
+                r'بگیر\s+.*'
+            ]
+        }
         print("STT Engine initialized. Model will be loaded on first use.")
 
     def _load_model(self):
@@ -33,6 +60,40 @@ class STTEngine:
         except Exception as e:
             print(f"Error loading Whisper model: {e}")
             raise
+
+    def detect_tone_and_punctuation(self, text):
+        """تشخیص لحن و اضافه کردن علامت‌گذاری مناسب"""
+        if not text or not text.strip():
+            return text
+            
+        text = text.strip()
+        detected_tone = None
+        
+        # تشخیص لحن بر اساس الگوها
+        for tone_type, patterns in self.tone_patterns.items():
+            for pattern in patterns:
+                if re.search(pattern, text, re.IGNORECASE):
+                    detected_tone = tone_type
+                    break
+            if detected_tone:
+                break
+        
+        # اضافه کردن علامت‌گذاری بر اساس لحن تشخیص داده شده
+        if detected_tone == 'question':
+            if not text.endswith('؟') and not text.endswith('?'):
+                text += '؟'
+        elif detected_tone == 'exclamation':
+            if not text.endswith('!') and not text.endswith('!'):
+                text += '!'
+        elif detected_tone == 'command':
+            # برای دستورات، معمولاً علامت خاصی اضافه نمی‌کنیم
+            pass
+        else:
+            # اگر لحن خاصی تشخیص داده نشد، بررسی کنیم آیا جمله کامل است
+            if not text.endswith('.') and not text.endswith('؟') and not text.endswith('!'):
+                text += '.'
+        
+        return text, detected_tone
 
     def transcribe(self, audio_data):
         """
@@ -64,10 +125,16 @@ class STTEngine:
             
             text = result["text"].strip()
             
-            # پاک‌سازی متن
+            # پاک‌سازی متن و تشخیص لحن
             if text:
-                print(f"Transcribed: {text}")
-                return text
+                # تشخیص لحن و اضافه کردن علامت‌گذاری
+                processed_text, detected_tone = self.detect_tone_and_punctuation(text)
+                
+                print(f"Transcribed: {processed_text}")
+                if detected_tone:
+                    print(f"Detected tone: {detected_tone}")
+                
+                return processed_text
             else:
                 return ""
                 
@@ -84,7 +151,14 @@ class STTEngine:
                 self._load_model()
                 
             result = self.model.transcribe(file_path, language="fa", fp16=False)
-            return result["text"].strip()
+            text = result["text"].strip()
+            
+            if text:
+                # تشخیص لحن و اضافه کردن علامت‌گذاری
+                processed_text, detected_tone = self.detect_tone_and_punctuation(text)
+                return processed_text
+            else:
+                return ""
             
         except Exception as e:
             print(f"Error transcribing file {file_path}: {e}")
@@ -93,10 +167,16 @@ class STTEngine:
     def get_model_info(self):
         """دریافت اطلاعات مدل"""
         if not self.model_loaded:
-            return "Model not loaded"
+            return {
+                "model_name": "مدل بارگذاری نشده",
+                "language": "نامشخص",
+                "device": "نامشخص"
+            }
         
         return {
             "model_name": config.WHISPER_MODEL,
             "language": "Persian (fa)",
-            "device": "CPU" if not config.TTS_USE_GPU else "GPU"
+            "device": "CPU" if not config.TTS_USE_GPU else "GPU",
+            "tone_detection": "Enabled",
+            "supported_tones": list(self.tone_patterns.keys())
         }

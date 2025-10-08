@@ -86,10 +86,62 @@ class LinguaStreamApp:
             st.error(f"❌ خطا در راه‌اندازی سیستم: {str(e)}")
             return False
     
+    def request_microphone_permission(self):
+        """درخواست دسترسی میکروفن از کاربر"""
+        if not st.session_state.get('mic_permission_granted', False):
+            st.warning("🔒 برای شروع ضبط، ابتدا باید دسترسی میکروفن را تأیید کنید.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ اجازه دسترسی میکروفن", type="primary"):
+                    try:
+                        # تست دسترسی میکروفن
+                        import pyaudio
+                        p = pyaudio.PyAudio()
+                        
+                        # بررسی دستگاه‌های ورودی موجود
+                        device_count = p.get_device_count()
+                        input_devices = []
+                        
+                        for i in range(device_count):
+                            device_info = p.get_device_info_by_index(i)
+                            if device_info['maxInputChannels'] > 0:
+                                input_devices.append({
+                                    'index': i,
+                                    'name': device_info['name'],
+                                    'channels': device_info['maxInputChannels']
+                                })
+                        
+                        if not input_devices:
+                            st.error("❌ هیچ دستگاه میکروفن یافت نشد!")
+                            return False
+                        
+                        # ذخیره دستگاه‌های موجود
+                        st.session_state.available_mics = input_devices
+                        st.session_state.mic_permission_granted = True
+                        st.success("✅ دسترسی میکروفن تأیید شد!")
+                        st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"❌ خطا در دسترسی میکروفن: {str(e)}")
+                        return False
+                        
+            with col2:
+                if st.button("❌ رد دسترسی"):
+                    st.error("❌ بدون دسترسی میکروفن، امکان ضبط صدا وجود ندارد.")
+                    return False
+                    
+            return False
+        return True
+
     def start_recording(self):
         """شروع ضبط صدا"""
         if not self.is_initialized:
             st.error("لطفاً ابتدا سیستم را راه‌اندازی کنید.")
+            return
+            
+        # بررسی دسترسی میکروفن
+        if not self.request_microphone_permission():
             return
             
         try:
@@ -169,11 +221,41 @@ with st.sidebar:
             st.write(f"**مدل:** {model_info.get('model_name', 'نامشخص')}")
             st.write(f"**زبان:** {model_info.get('language', 'نامشخص')}")
             st.write(f"**دستگاه:** {model_info.get('device', 'نامشخص')}")
+            
+            # اطلاعات تشخیص لحن
+            if 'tone_detection' in model_info:
+                st.write(f"**تشخیص لحن:** {model_info.get('tone_detection', 'غیرفعال')}")
+                if 'supported_tones' in model_info:
+                    tones = model_info.get('supported_tones', [])
+                    tone_names = {
+                        'question': 'سوالی',
+                        'exclamation': 'تعجبی',
+                        'command': 'دستوری'
+                    }
+                    tone_display = [tone_names.get(tone, tone) for tone in tones]
+                    st.write(f"**لحن‌های پشتیبانی شده:** {', '.join(tone_display)}")
     else:
         st.markdown('<div class="status-box recording-status">❌ سیستم راه‌اندازی نشده</div>', unsafe_allow_html=True)
     
     # تنظیمات ضبط
     st.subheader("🎤 تنظیمات ضبط")
+    
+    # انتخاب میکروفن
+    if st.session_state.get('mic_permission_granted', False) and 'available_mics' in st.session_state:
+        mic_options = {f"{mic['name']} (کانال‌ها: {mic['channels']})": mic['index'] 
+                      for mic in st.session_state.available_mics}
+        
+        selected_mic_name = st.selectbox(
+            "انتخاب میکروفن:",
+            options=list(mic_options.keys()),
+            index=0
+        )
+        
+        if selected_mic_name:
+            selected_mic_index = mic_options[selected_mic_name]
+            st.session_state.selected_mic_index = selected_mic_index
+            st.info(f"میکروفن انتخاب شده: {selected_mic_name}")
+    
     min_duration = st.slider("حداقل مدت زمان ضبط (ثانیه)", 1, 10, int(config.MIN_AUDIO_DURATION))
     max_duration = st.slider("حداکثر مدت زمان ضبط (ثانیه)", 10, 60, int(config.MAX_AUDIO_DURATION))
 
