@@ -1,83 +1,83 @@
-# Deployment Documentation
+# مستندات استقرار
 
-## Overview
+## نمای کلی
 
-This document provides comprehensive deployment instructions for LinguaStream across different environments, including local development, production deployment, and containerized solutions.
+این سند دستورالعمل‌های جامع استقرار VoiceBridge در محیط‌های مختلف، شامل توسعه محلی، استقرار تولید و راه‌حل‌های کانتینری ارائه می‌دهد.
 
-## Prerequisites
+## پیش‌نیازها
 
-### System Requirements
+### نیازمندی‌های سیستم
 
-#### Minimum Hardware
-- **CPU**: Dual-core 2.0GHz processor
-- **RAM**: 4GB system memory
-- **Storage**: 2GB free disk space
-- **Audio**: Microphone and speakers/headphones
-- **Network**: Internet connection for initial model download
+#### حداقل سخت‌افزار
+- **CPU**: پردازنده دو هسته 2.0GHz
+- **RAM**: 4GB حافظه سیستم
+- **ذخیره‌سازی**: 2GB فضای آزاد دیسک
+- **صوتی**: میکروفون و بلندگو/هدفون
+- **شبکه**: اتصال اینترنت برای دانلود اولیه مدل
 
-#### Recommended Hardware
-- **CPU**: Quad-core 3.0GHz+ processor
-- **RAM**: 8GB+ system memory
-- **Storage**: 5GB+ free disk space (SSD recommended)
-- **Audio**: External USB microphone, quality audio output
-- **GPU**: Optional NVIDIA GPU with CUDA support
+#### سخت‌افزار توصیه شده
+- **CPU**: پردازنده چهار هسته 3.0GHz+
+- **RAM**: 8GB+ حافظه سیستم
+- **ذخیره‌سازی**: 5GB+ فضای آزاد دیسک (SSD توصیه می‌شود)
+- **صوتی**: میکروفون USB خارجی، خروجی صوتی با کیفیت
+- **GPU**: اختیاری NVIDIA GPU با پشتیبانی CUDA
 
-### Software Requirements
+### نیازمندی‌های نرم‌افزاری
 
-#### Operating Systems
+#### سیستم‌عامل‌ها
 - **Windows**: 10/11 (64-bit)
-- **Linux**: Ubuntu 20.04+, CentOS 8+, Debian 11+
+- **Linux**: Ubuntu 20.04+، CentOS 8+، Debian 11+
 - **macOS**: 10.15+ (Intel/Apple Silicon)
 
-#### Python Environment
-- **Python**: 3.8+ (3.10+ recommended)
-- **pip**: Latest version
-- **Virtual Environment**: Recommended
+#### محیط Python
+- **Python**: 3.8+ (3.10+ توصیه می‌شود)
+- **pip**: آخرین نسخه
+- **محیط مجازی**: توصیه می‌شود
 
-## Local Development Setup
+## راه‌اندازی توسعه محلی
 
-### 1. Environment Preparation
+### 1. آماده‌سازی محیط
 
-#### Windows Setup
+#### راه‌اندازی Windows
 
 ```powershell
-# Install Python (if not already installed)
+# نصب Python (در صورت عدم نصب)
 winget install Python.Python.3.10
 
-# Create virtual environment
-python -m venv linguastream-env
-linguastream-env\Scripts\activate
+# ایجاد محیط مجازی
+python -m venv voicebridge-env
+voicebridge-env\Scripts\activate
 
-# Upgrade pip
+# ارتقای pip
 python -m pip install --upgrade pip
 ```
 
-#### Linux/macOS Setup
+#### راه‌اندازی Linux/macOS
 
 ```bash
-# Install Python (Ubuntu/Debian)
+# نصب Python (Ubuntu/Debian)
 sudo apt update
 sudo apt install python3.10 python3.10-venv python3-pip
 
-# Create virtual environment
-python3 -m venv linguastream-env
-source linguastream-env/bin/activate
+# ایجاد محیط مجازی
+python3 -m venv voicebridge-env
+source voicebridge-env/bin/activate
 
-# Upgrade pip
+# ارتقای pip
 python -m pip install --upgrade pip
 ```
 
-### 2. Project Installation
+### 2. نصب پروژه
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/LinguaStream.git
-cd LinguaStream
+# کلون کردن مخزن
+git clone https://github.com/yourusername/VoiceBridge.git
+cd VoiceBridge
 
-# Install dependencies
+# نصب وابستگی‌ها
 pip install -r requirements.txt
 
-# Install additional system dependencies
+# نصب وابستگی‌های اضافی سیستم
 # Windows
 pip install pyaudio
 
@@ -89,103 +89,103 @@ brew install portaudio
 pip install pyaudio
 ```
 
-### 3. Configuration Setup
+### 3. راه‌اندازی پیکربندی
 
 ```bash
-# Copy configuration template
+# کپی کردن قالب پیکربندی
 cp config.py.example config.py
 
-# Edit configuration
-nano config.py  # or use your preferred editor
+# ویرایش پیکربندی
+nano config.py  # یا از ویرایشگر مورد نظر خود استفاده کنید
 ```
 
-#### Configuration Options
+#### گزینه‌های پیکربندی
 
 ```python
 # config.py
 import os
 
-# Audio Configuration
+# پیکربندی صوتی
 SAMPLE_RATE = 16000
 CHUNK_SIZE = 1024
 CHANNELS = 1
 BIT_DEPTH = 16
 
-# Model Configuration
+# پیکربندی مدل
 WHISPER_MODEL = "base"  # tiny, base, small, medium, large
 TRANSLATION_MODEL_NAME = "Helsinki-NLP/opus-mt-fa-en"
 TTS_VOICE_MODEL_PATH = "models/en_US-amy-medium.onnx"
 
-# Performance Configuration
+# پیکربندی عملکرد
 MAX_LATENCY = 2.0
 BUFFER_SIZE = 4096
 THREAD_COUNT = 4
 
-# Path Configuration
-MODEL_CACHE_DIR = os.path.expanduser("~/.linguastream/models")
-LOG_DIR = os.path.expanduser("~/.linguastream/logs")
+# پیکربندی مسیر
+MODEL_CACHE_DIR = os.path.expanduser("~/.voicebridge/models")
+LOG_DIR = os.path.expanduser("~/.voicebridge/logs")
 ```
 
-### 4. Model Download
+### 4. دانلود مدل
 
 ```bash
-# Run application to trigger model download
+# اجرای برنامه برای شروع دانلود مدل
 python main.py
 
-# Models will be downloaded automatically on first run
-# This may take several minutes depending on internet speed
+# مدل‌ها به صورت خودکار در اولین اجرا دانلود می‌شوند
+# این ممکن است چند دقیقه طول بکشد بسته به سرعت اینترنت
 ```
 
-### 5. Audio Device Configuration
+### 5. پیکربندی دستگاه صوتی
 
-#### Windows Audio Setup
+#### راه‌اندازی صوتی Windows
 
-1. **Install Virtual Audio Cable** (optional)
-   - Download from: https://vb-audio.com/Cable/
-   - Install and configure as default playback device
+1. **نصب Virtual Audio Cable** (اختیاری)
+   - دانلود از: https://vb-audio.com/Cable/
+   - نصب و پیکربندی به عنوان دستگاه پخش پیش‌فرض
 
-2. **Configure Microphone**
-   - Right-click speaker icon → Sound settings
-   - Select input device
-   - Test microphone levels
+2. **پیکربندی میکروفون**
+   - کلیک راست روی آیکون بلندگو → تنظیمات صدا
+   - انتخاب دستگاه ورودی
+   - تست سطح میکروفون
 
-#### Linux Audio Setup
+#### راه‌اندازی صوتی Linux
 
 ```bash
-# Install ALSA utilities
+# نصب ابزارهای ALSA
 sudo apt install alsa-utils
 
-# List audio devices
-arecord -l  # Input devices
-aplay -l    # Output devices
+# لیست دستگاه‌های صوتی
+arecord -l  # دستگاه‌های ورودی
+aplay -l    # دستگاه‌های خروجی
 
-# Test microphone
+# تست میکروفون
 arecord -f cd -d 5 test.wav
 aplay test.wav
 ```
 
-#### macOS Audio Setup
+#### راه‌اندازی صوتی macOS
 
 ```bash
-# Install Homebrew (if not installed)
+# نصب Homebrew (در صورت عدم نصب)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Install audio tools
+# نصب ابزارهای صوتی
 brew install portaudio
 ```
 
-### 6. Verification
+### 6. تأیید
 
 ```bash
-# Test installation
-python -c "import whisper, transformers, piper; print('All dependencies installed successfully')"
+# تست نصب
+python -c "import whisper, transformers, piper; print('تمام وابستگی‌ها با موفقیت نصب شدند')"
 
-# Run basic test
+# اجرای تست پایه
 python -c "
 from src.stt_engine import STTEngine
 from src.translator import Translator
 from src.tts_engine import TTSEngine
-print('All components imported successfully')
+print('تمام اجزا با موفقیت import شدند')
 "
 ```
 

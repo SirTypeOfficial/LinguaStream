@@ -1,120 +1,120 @@
-# Performance Documentation
+# مستندات عملکرد
 
-## Overview
+## نمای کلی
 
-This document provides comprehensive performance analysis, optimization strategies, and resource requirements for LinguaStream's real-time audio translation system. The focus is on achieving minimal latency while maintaining high accuracy in resource-constrained environments.
+این سند تحلیل جامع عملکرد، استراتژی‌های بهینه‌سازی و نیازمندی‌های منابع برای سیستم ترجمه صوتی همزمان VoiceBridge ارائه می‌دهد. تمرکز بر دستیابی به حداقل تأخیر در عین حفظ دقت بالا در محیط‌های با منابع محدود است.
 
-## Performance Metrics
+## معیارهای عملکرد
 
-### Key Performance Indicators (KPIs)
+### شاخص‌های کلیدی عملکرد (KPI)
 
-| Metric | Target | Achieved | Notes |
+| معیار | هدف | دستیابی | یادداشت |
 |--------|--------|----------|-------|
-| **End-to-End Latency** | < 2.0s | ~1.8s | Audio input to output |
-| **STT Latency** | < 0.5s | ~0.4s | Speech recognition |
-| **Translation Latency** | < 0.3s | ~0.25s | Text translation |
-| **TTS Latency** | < 0.5s | ~0.45s | Speech synthesis |
-| **Memory Usage** | < 2GB | ~1.75GB | Peak RAM consumption |
-| **CPU Usage** | < 50% | ~35% | Quad-core system |
-| **Accuracy** | > 90% | ~92% | Persian recognition |
+| **تأخیر انتها به انتها** | < 2.0s | ~1.8s | ورودی صوتی تا خروجی |
+| **تأخیر STT** | < 0.5s | ~0.4s | تشخیص گفتار |
+| **تأخیر ترجمه** | < 0.3s | ~0.25s | ترجمه متن |
+| **تأخیر TTS** | < 0.5s | ~0.45s | سنتز گفتار |
+| **استفاده از حافظه** | < 2GB | ~1.75GB | مصرف پیک RAM |
+| **استفاده از CPU** | < 50% | ~35% | سیستم چهار هسته‌ای |
+| **دقت** | > 90% | ~92% | تشخیص فارسی |
 
-### Latency Breakdown
+### تجزیه تأخیر
 
 ```mermaid
 gantt
-    title Real-Time Translation Pipeline Latency
+    title خط لوله ترجمه همزمان تأخیر
     dateFormat X
     axisFormat %L ms
     
-    section Audio Capture
-    Microphone Input    :0, 50
+    section ضبط صوتی
+    ورودی میکروفون    :0, 50
     
-    section STT Processing
-    Audio Preprocessing :50, 80
-    Whisper Inference  :80, 480
+    section پردازش STT
+    پیش‌پردازش صوتی :50, 80
+    استنتاج Whisper  :80, 480
     
-    section Translation
-    Text Processing    :480, 520
-    Model Inference    :520, 770
+    section ترجمه
+    پردازش متن    :480, 520
+    استنتاج مدل    :520, 770
     
-    section TTS Processing
-    Text Processing    :770, 800
-    Speech Synthesis   :800, 1250
+    section پردازش TTS
+    پردازش متن    :770, 800
+    سنتز گفتار   :800, 1250
     
-    section Audio Output
-    Buffer Management  :1250, 1280
-    Virtual Audio      :1280, 1800
+    section خروجی صوتی
+    مدیریت بافر  :1250, 1280
+    صوتی مجازی      :1280, 1800
 ```
 
-## Resource Requirements
+## نیازمندی‌های منابع
 
-### Hardware Specifications
+### مشخصات سخت‌افزاری
 
-#### Minimum Requirements
-- **CPU**: Dual-core 2.0GHz (Intel i3 or AMD Ryzen 3)
+#### حداقل نیازمندی‌ها
+- **CPU**: دو هسته 2.0GHz (Intel i3 یا AMD Ryzen 3)
 - **RAM**: 4GB DDR4
-- **Storage**: 2GB free space (SSD recommended)
-- **Audio**: Built-in microphone and speakers
+- **ذخیره‌سازی**: 2GB فضای آزاد (SSD توصیه می‌شود)
+- **صوتی**: میکروفون و بلندگو داخلی
 
-#### Recommended Requirements
-- **CPU**: Quad-core 3.0GHz+ (Intel i5/i7 or AMD Ryzen 5/7)
+#### نیازمندی‌های توصیه شده
+- **CPU**: چهار هسته 3.0GHz+ (Intel i5/i7 یا AMD Ryzen 5/7)
 - **RAM**: 8GB+ DDR4
-- **Storage**: 5GB+ free space (NVMe SSD)
-- **Audio**: External USB microphone, quality speakers/headphones
-- **GPU**: Optional NVIDIA GPU with CUDA support
+- **ذخیره‌سازی**: 5GB+ فضای آزاد (NVMe SSD)
+- **صوتی**: میکروفون USB خارجی، بلندگو/هدفون با کیفیت
+- **GPU**: اختیاری NVIDIA GPU با پشتیبانی CUDA
 
-#### High-Performance Requirements
-- **CPU**: 8-core 3.5GHz+ (Intel i7/i9 or AMD Ryzen 7/9)
+#### نیازمندی‌های عملکرد بالا
+- **CPU**: 8 هسته 3.5GHz+ (Intel i7/i9 یا AMD Ryzen 7/9)
 - **RAM**: 16GB+ DDR4
-- **Storage**: 10GB+ NVMe SSD
-- **GPU**: NVIDIA RTX 3060+ with 8GB+ VRAM
-- **Audio**: Professional USB microphone, studio monitors
+- **ذخیره‌سازی**: 10GB+ NVMe SSD
+- **GPU**: NVIDIA RTX 3060+ با 8GB+ VRAM
+- **صوتی**: میکروفون USB حرفه‌ای، مانیتور استودیو
 
-### Software Requirements
+### نیازمندی‌های نرم‌افزاری
 
-#### Operating System
+#### سیستم‌عامل
 - **Windows**: 10/11 (64-bit)
 - **Linux**: Ubuntu 20.04+ (64-bit)
 - **macOS**: 10.15+ (Intel/Apple Silicon)
 
-#### Python Environment
-- **Python**: 3.8+ (3.10+ recommended)
-- **pip**: Latest version
-- **Virtual Environment**: Recommended for isolation
+#### محیط Python
+- **Python**: 3.8+ (3.10+ توصیه می‌شود)
+- **pip**: آخرین نسخه
+- **محیط مجازی**: برای جداسازی توصیه می‌شود
 
-## Performance Optimization Strategies
+## استراتژی‌های بهینه‌سازی عملکرد
 
-### 1. Model Optimization
+### 1. بهینه‌سازی مدل
 
-#### Whisper Model Selection
+#### انتخاب مدل Whisper
 
-| Model | Size | Latency | Accuracy | Memory | Use Case |
+| مدل | اندازه | تأخیر | دقت | حافظه | مورد استفاده |
 |-------|------|---------|----------|--------|----------|
-| tiny | 39MB | ~200ms | 85% | 200MB | Real-time, low-resource |
-| base | 74MB | ~400ms | 92% | 1GB | Balanced performance |
-| small | 244MB | ~600ms | 95% | 2GB | High accuracy |
-| medium | 769MB | ~1000ms | 97% | 4GB | Maximum accuracy |
-| large | 1550MB | ~2000ms | 98% | 8GB | Research/offline |
+| tiny | 39MB | ~200ms | 85% | 200MB | همزمان، منابع کم |
+| base | 74MB | ~400ms | 92% | 1GB | عملکرد متعادل |
+| small | 244MB | ~600ms | 95% | 2GB | دقت بالا |
+| medium | 769MB | ~1000ms | 97% | 4GB | حداکثر دقت |
+| large | 1550MB | ~2000ms | 98% | 8GB | تحقیق/آفلاین |
 
-**Recommendation**: Use `base` model for optimal balance of speed and accuracy.
+**توصیه**: از مدل `base` برای تعادل بهینه سرعت و دقت استفاده کنید.
 
-#### Model Quantization
+#### کوانتیزاسیون مدل
 
 ```python
-# FP16 quantization for GPU acceleration
+# کوانتیزاسیون FP16 برای شتاب‌دهی GPU
 model = whisper.load_model("base", device="cuda", fp16=True)
 
-# INT8 quantization for CPU optimization
+# کوانتیزاسیون INT8 برای بهینه‌سازی CPU
 import torch.quantization
 quantized_model = torch.quantization.quantize_dynamic(
     model, {torch.nn.Linear}, dtype=torch.qint8
 )
 ```
 
-#### Model Caching
+#### کش مدل
 
 ```python
-# Persistent model loading
+# بارگذاری مدل پایدار
 import pickle
 import os
 
@@ -131,9 +131,9 @@ def load_cached_model(model_name):
         return model
 ```
 
-### 2. Audio Processing Optimization
+### 2. بهینه‌سازی پردازش صوتی
 
-#### Buffer Management
+#### مدیریت بافر
 
 ```python
 class OptimizedAudioHandler:
@@ -143,31 +143,31 @@ class OptimizedAudioHandler:
         self.audio_buffer = collections.deque(maxlen=buffer_size)
         
     def capture_chunk(self):
-        # Non-blocking audio capture
+        # ضبط صوتی غیرمسدودکننده
         chunk = self.stream.read(self.chunk_size, exception_on_overflow=False)
         return np.frombuffer(chunk, dtype=np.int16)
 ```
 
-#### Audio Preprocessing
+#### پیش‌پردازش صوتی
 
 ```python
 def optimize_audio_input(audio_chunk):
-    # Normalize audio levels
+    # نرمال‌سازی سطح صوتی
     audio_chunk = audio_chunk.astype(np.float32) / 32768.0
     
-    # Apply noise reduction
+    # اعمال کاهش نویز
     audio_chunk = apply_noise_reduction(audio_chunk)
     
-    # Voice Activity Detection
+    # تشخیص فعالیت صوتی
     if not detect_voice_activity(audio_chunk):
         return None
         
     return audio_chunk
 ```
 
-### 3. Translation Optimization
+### 3. بهینه‌سازی ترجمه
 
-#### Batch Processing
+#### پردازش دسته‌ای
 
 ```python
 class OptimizedTranslator:
@@ -176,12 +176,12 @@ class OptimizedTranslator:
         self.batch_size = 4
         
     def translate_batch(self, texts):
-        # Process multiple texts together
+        # پردازش چندین متن با هم
         results = self.model(texts, batch_size=self.batch_size)
         return [result['translation_text'] for result in results]
 ```
 
-#### Caching Strategy
+#### استراتژی کش
 
 ```python
 import hashlib

@@ -1,99 +1,99 @@
-# Contributing Guidelines
+# راهنمای مشارکت
 
-## Welcome Contributors! 🎉
+## خوش آمدید مشارکت‌کنندگان! 🎉
 
-Thank you for your interest in contributing to LinguaStream! This document provides comprehensive guidelines for contributing to our real-time offline audio translation system.
+از علاقه شما به مشارکت در VoiceBridge متشکریم! این سند راهنمای جامعی برای مشارکت در سیستم ترجمه صوتی آفلاین همزمان ما ارائه می‌دهد.
 
-## Table of Contents
+## فهرست مطالب
 
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Setup](#development-setup)
-- [Contribution Workflow](#contribution-workflow)
-- [Coding Standards](#coding-standards)
-- [Testing Guidelines](#testing-guidelines)
-- [Documentation Standards](#documentation-standards)
-- [Issue Reporting](#issue-reporting)
-- [Pull Request Process](#pull-request-process)
-- [Release Process](#release-process)
+- [کد رفتار](#کد-رفتار)
+- [شروع کار](#شروع-کار)
+- [راه‌اندازی توسعه](#راه‌اندازی-توسعه)
+- [گردش کار مشارکت](#گردش-کار-مشارکت)
+- [استانداردهای کدنویسی](#استانداردهای-کدنویسی)
+- [راهنمای تست](#راهنمای-تست)
+- [استانداردهای مستندسازی](#استانداردهای-مستندسازی)
+- [گزارش مسائل](#گزارش-مسائل)
+- [فرآیند Pull Request](#فرآیند-pull-request)
+- [فرآیند انتشار](#فرآیند-انتشار)
 
-## Code of Conduct
+## کد رفتار
 
-### Our Pledge
+### تعهد ما
 
-We are committed to providing a welcoming and inclusive environment for all contributors. Please:
+ما متعهد به ارائه محیطی خوشامد و فراگیر برای تمام مشارکت‌کنندگان هستیم. لطفاً:
 
-- **Be respectful** and constructive in all interactions
-- **Be patient** with newcomers and questions
-- **Be collaborative** and help others learn
-- **Be professional** in all communications
-- **Be inclusive** and welcoming to diverse perspectives
+- **محترم باشید** و سازنده در تمام تعاملات
+- **صبور باشید** با تازه‌کاران و سوالات
+- **مشارکتی باشید** و به دیگران کمک کنید یاد بگیرند
+- **حرفه‌ای باشید** در تمام ارتباطات
+- **فراگیر باشید** و خوشامد به دیدگاه‌های متنوع
 
-### Unacceptable Behavior
+### رفتار غیرقابل قبول
 
-- Harassment, discrimination, or offensive comments
-- Personal attacks or trolling
-- Spam or off-topic discussions
-- Sharing private information without permission
-- Any conduct that creates an unwelcoming environment
+- آزار و اذیت، تبعیض یا نظرات توهین‌آمیز
+- حملات شخصی یا ترویل
+- اسپم یا بحث‌های خارج از موضوع
+- اشتراک اطلاعات خصوصی بدون اجازه
+- هر رفتاری که محیطی ناخوشامد ایجاد کند
 
-## Getting Started
+## شروع کار
 
-### Prerequisites
+### پیش‌نیازها
 
-- Python 3.8+ development environment
-- Git version control
-- Basic understanding of audio processing and machine learning
-- Familiarity with Persian (Farsi) and English languages
+- محیط توسعه Python 3.8+
+- کنترل نسخه Git
+- درک پایه از پردازش صوتی و یادگیری ماشین
+- آشنایی با زبان‌های فارسی و انگلیسی
 
-### Areas for Contribution
+### زمینه‌های مشارکت
 
-We welcome contributions in the following areas:
+ما از مشارکت در زمینه‌های زیر استقبال می‌کنیم:
 
-#### 🎯 High Priority
-- **Performance Optimization**: Reduce latency and memory usage
-- **Model Integration**: Add support for new STT/TTS models
-- **Audio Quality**: Improve audio preprocessing and postprocessing
-- **Error Handling**: Enhance robustness and error recovery
-- **Testing**: Expand test coverage and add integration tests
+#### 🎯 اولویت بالا
+- **بهینه‌سازی عملکرد**: کاهش تأخیر و استفاده از حافظه
+- **ادغام مدل**: افزودن پشتیبانی از مدل‌های STT/TTS جدید
+- **کیفیت صوتی**: بهبود پیش‌پردازش و پس‌پردازش صوتی
+- **مدیریت خطا**: افزایش استحکام و بازیابی خطا
+- **تست**: گسترش پوشش تست و افزودن تست‌های یکپارچگی
 
-#### 🔧 Medium Priority
-- **Multi-language Support**: Add support for Arabic, Turkish, etc.
-- **GUI Development**: Create user-friendly interface
-- **Mobile Support**: Optimize for mobile platforms
-- **Cloud Integration**: Add optional cloud processing
-- **API Development**: Create REST API for external integration
+#### 🔧 اولویت متوسط
+- **پشتیبانی چندزبانه**: افزودن پشتیبانی از عربی، ترکی و غیره
+- **توسعه GUI**: ایجاد رابط کاربری دوستانه
+- **پشتیبانی موبایل**: بهینه‌سازی برای پلتفرم‌های موبایل
+- **ادغام ابری**: افزودن پردازش ابری اختیاری
+- **توسعه API**: ایجاد REST API برای ادغام خارجی
 
-#### 🚀 Future Features
-- **Lip-sync Integration**: Real-time facial animation
-- **Video Processing**: Multi-modal translation
-- **Voice Cloning**: Custom voice synthesis
-- **Edge Computing**: IoT and embedded deployment
+#### 🚀 ویژگی‌های آینده
+- **ادغام همگام‌سازی لب**: انیمیشن صورت همزمان
+- **پردازش ویدیو**: ترجمه چندوجهی
+- **کلونینگ صدا**: سنتز صدا سفارشی
+- **محاسبات Edge**: استقرار IoT و embedded
 
-## Development Setup
+## راه‌اندازی توسعه
 
-### 1. Fork and Clone
+### 1. Fork و Clone
 
 ```bash
-# Fork the repository on GitHub
-# Then clone your fork
-git clone https://github.com/yourusername/LinguaStream.git
-cd LinguaStream
+# Fork کردن مخزن روی GitHub
+# سپس clone کردن fork شما
+git clone https://github.com/yourusername/VoiceBridge.git
+cd VoiceBridge
 
-# Add upstream remote
-git remote add upstream https://github.com/originalowner/LinguaStream.git
+# افزودن remote upstream
+git remote add upstream https://github.com/originalowner/VoiceBridge.git
 ```
 
-### 2. Environment Setup
+### 2. راه‌اندازی محیط
 
 ```bash
-# Create virtual environment
+# ایجاد محیط مجازی
 python -m venv venv
 source venv/bin/activate  # Linux/macOS
-# or
+# یا
 venv\Scripts\activate     # Windows
 
-# Install development dependencies
+# نصب وابستگی‌های توسعه
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
@@ -101,17 +101,17 @@ pip install -r requirements-dev.txt
 ### 3. Pre-commit Hooks
 
 ```bash
-# Install pre-commit hooks
+# نصب pre-commit hooks
 pip install pre-commit
 pre-commit install
 
-# Run hooks manually
+# اجرای دستی hooks
 pre-commit run --all-files
 ```
 
-### 4. IDE Configuration
+### 4. پیکربندی IDE
 
-#### VS Code Settings
+#### تنظیمات VS Code
 
 ```json
 {
@@ -124,91 +124,91 @@ pre-commit run --all-files
 }
 ```
 
-#### PyCharm Configuration
+#### پیکربندی PyCharm
 
-1. Open project in PyCharm
-2. Configure Python interpreter to use virtual environment
-3. Enable code inspection and formatting
-4. Configure pytest as test runner
+1. باز کردن پروژه در PyCharm
+2. پیکربندی مفسر Python برای استفاده از محیط مجازی
+3. فعال کردن بررسی کد و فرمت‌بندی
+4. پیکربندی pytest به عنوان اجراکننده تست
 
-## Contribution Workflow
+## گردش کار مشارکت
 
-### 1. Issue First Approach
+### 1. رویکرد Issue First
 
-Before starting work on a feature or bug fix:
+قبل از شروع کار روی یک ویژگی یا رفع باگ:
 
-1. **Check existing issues** to avoid duplication
-2. **Create a new issue** describing the problem or feature
-3. **Wait for maintainer approval** before starting work
-4. **Assign yourself** to the issue
+1. **بررسی مسائل موجود** برای جلوگیری از تکرار
+2. **ایجاد issue جدید** توصیف مشکل یا ویژگی
+3. **انتظار برای تأیید نگهدارنده** قبل از شروع کار
+4. **اختصاص خود** به issue
 
-### 2. Branch Strategy
+### 2. استراتژی Branch
 
 ```bash
-# Create feature branch
+# ایجاد branch ویژگی
 git checkout -b feature/your-feature-name
 
-# Or bugfix branch
+# یا branch رفع باگ
 git checkout -b bugfix/issue-number-description
 
-# Or hotfix branch
+# یا branch hotfix
 git checkout -b hotfix/critical-issue
 ```
 
-### 3. Development Process
+### 3. فرآیند توسعه
 
 ```bash
-# Make changes
-# Test your changes
+# ایجاد تغییرات
+# تست تغییرات شما
 python -m pytest tests/
 
-# Commit changes
+# commit تغییرات
 git add .
 git commit -m "feat: add new feature description"
 
-# Push to your fork
+# push به fork شما
 git push origin feature/your-feature-name
 ```
 
 ### 4. Pull Request
 
-1. **Create Pull Request** from your fork to main repository
-2. **Fill out PR template** completely
-3. **Link related issues** using keywords (fixes #123)
-4. **Request review** from maintainers
-5. **Address feedback** promptly
+1. **ایجاد Pull Request** از fork شما به مخزن اصلی
+2. **پر کردن قالب PR** به طور کامل
+3. **پیوند دادن مسائل مرتبط** با استفاده از کلمات کلیدی (fixes #123)
+4. **درخواست بررسی** از نگهدارندگان
+5. **رسیدگی به بازخورد** به موقع
 
-## Coding Standards
+## استانداردهای کدنویسی
 
-### Python Style Guide
+### راهنمای سبک Python
 
-We follow [PEP 8](https://pep8.org/) with some modifications:
+ما از [PEP 8](https://pep8.org/) با برخی تغییرات پیروی می‌کنیم:
 
 ```python
-# Use Black for formatting
+# استفاده از Black برای فرمت‌بندی
 black --line-length 88 src/ tests/
 
-# Use isort for import sorting
+# استفاده از isort برای مرتب‌سازی import
 isort src/ tests/
 
-# Use flake8 for linting
+# استفاده از flake8 برای linting
 flake8 src/ tests/
 ```
 
-### Code Style Examples
+### نمونه‌های سبک کد
 
-#### Good Practices
+#### بهترین روش‌ها
 
 ```python
 # Type hints
 def transcribe(self, audio_data: np.ndarray) -> str:
-    """Transcribe audio data to Persian text.
+    """تبدیل داده‌های صوتی به متن فارسی.
     
     Args:
-        audio_data: Audio chunk as numpy array
+        audio_data: chunk صوتی به عنوان آرایه numpy
         
     Returns:
-        Transcribed Persian text
+        متن فارسی تبدیل شده
     """
     if audio_data is None or len(audio_data) == 0:
         return ""
@@ -217,23 +217,23 @@ def transcribe(self, audio_data: np.ndarray) -> str:
         result = self.model.transcribe(audio_data, language="fa")
         return result["text"].strip()
     except Exception as e:
-        logger.error(f"Transcription failed: {e}")
+        logger.error(f"تبدیل شکست خورد: {e}")
         return ""
 ```
 
-#### Avoid These Patterns
+#### از این الگوها اجتناب کنید
 
 ```python
-# Bad: No type hints, unclear variable names
+# بد: بدون type hints، نام‌های متغیر نامشخص
 def transcribe(audio):
     result = model.transcribe(audio)
     return result["text"]
 
-# Bad: No error handling
+# بد: بدون مدیریت خطا
 def transcribe(self, audio_data):
     return self.model.transcribe(audio_data)["text"]
 
-# Bad: No documentation
+# بد: بدون مستندسازی
 def transcribe(self, audio_data):
     return self.model.transcribe(audio_data)["text"]
 ```

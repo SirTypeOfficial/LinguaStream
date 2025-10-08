@@ -1,0 +1,21 @@
+# وابستگی‌های اصلی
+torch>=2.0.0
+torchaudio>=2.0.0
+transformers>=4.30.0
+whisper>=1.1.0
+TTS>=0.20.0
+streamlit>=1.28.0
+pyaudio>=0.2.11
+numpy>=1.24.0
+scipy>=1.10.0
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# وابستگی‌های GPU (اختیاری)
+# CUDA toolkit باید جداگانه نصب شود
+# nvidia-ml-py3>=11.0.0
+
+# وابستگی‌های توسعه
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0

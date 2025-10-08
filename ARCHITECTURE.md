@@ -1,211 +1,223 @@
-# Architecture Documentation
+# مستندات معماری
 
-## System Overview
+## نمای کلی سیستم
 
-LinguaStream implements a sophisticated real-time audio translation pipeline designed for minimal latency and offline operation. The architecture follows a modular, event-driven design pattern optimized for resource-constrained environments.
+VoiceBridge یک خط لوله ترجمه صوتی همزمان پیچیده پیاده‌سازی می‌کند که برای تأخیر کم و عملکرد آفلاین طراحی شده است. معماری از الگوی طراحی مدولار و رویدادمحور پیروی می‌کند که برای محیط‌های با منابع محدود بهینه‌سازی شده است.
 
-## High-Level Architecture
+## معماری سطح بالا
 
 ```mermaid
 graph TB
-    A[Microphone Input] --> B[Audio Handler]
-    B --> C[STT Engine]
-    C --> D[Translator]
-    D --> E[TTS Engine]
-    E --> F[Virtual Audio Output]
+    A[ورودی میکروفون] --> B[مدیر صوتی]
+    B --> C[موتور STT]
+    C --> D[مترجم]
+    D --> E[موتور TTS]
+    E --> F[خروجی صوتی مجازی]
     
-    G[Configuration] --> B
+    G[پیکربندی] --> B
     G --> C
     G --> D
     G --> E
     
-    H[Model Storage] --> C
+    H[ذخیره‌سازی مدل] --> C
     H --> D
     H --> E
 ```
 
-## Core Components
+## اجزای اصلی
 
-### 1. Audio Handler (`src/audio_handler.py`)
+### 1. مدیر صوتی (`src/audio_handler.py`)
 
-**Purpose**: Manages all audio I/O operations including microphone capture and virtual device output.
+**هدف**: تمام عملیات ورودی/خروجی صوتی شامل ضبط میکروفون و خروجی دستگاه مجازی را مدیریت می‌کند.
 
-**Key Responsibilities**:
-- Real-time audio chunk capture from microphone
-- Audio preprocessing and normalization
-- Virtual audio device management
-- Audio format conversion and buffering
+**مسئولیت‌های کلیدی**:
+- ضبط chunk صوتی همزمان از میکروفون
+- پیش‌پردازش و نرمال‌سازی صوتی
+- مدیریت دستگاه صوتی مجازی
+- تبدیل فرمت صوتی و بافرینگ
 
-**Technical Specifications**:
-- Sample Rate: 16kHz (configurable)
-- Bit Depth: 16-bit PCM
-- Channels: Mono
-- Buffer Size: 1024 samples (configurable)
+**مشخصات فنی**:
+- نرخ نمونه: 16kHz (قابل تنظیم)
+- عمق بیت: 16-bit PCM
+- کانال‌ها: مونو
+- اندازه بافر: 1024 نمونه (قابل تنظیم)
 
-**Data Flow**:
+**جریان داده**:
 ```
-Microphone → PyAudio Stream → NumPy Array → Audio Chunk
+میکروفون → PyAudio Stream → آرایه NumPy → Chunk صوتی
 ```
 
-### 2. STT Engine (`src/stt_engine.py`)
+### 2. موتور STT (`src/stt_engine.py`)
 
-**Purpose**: Converts Persian speech audio to text using OpenAI's Whisper model.
+**هدف**: صوتی گفتار فارسی را با استفاده از مدل Whisper OpenAI به متن تبدیل می‌کند.
 
-**Key Responsibilities**:
-- Persian speech recognition
-- Audio preprocessing for Whisper
-- Text normalization and cleaning
-- Confidence scoring
+**مسئولیت‌های کلیدی**:
+- تشخیص گفتار فارسی
+- پیش‌پردازش صوتی برای Whisper
+- نرمال‌سازی و پاک‌سازی متن
+- امتیازدهی اعتماد
 
-**Model Configuration**:
-- Base Model: Whisper Base (configurable: tiny, base, small, medium, large)
-- Language: Persian (fa)
-- Precision: FP32 (CPU compatibility)
-- VAD: Voice Activity Detection enabled
+**پیکربندی مدل**:
+- مدل پایه: Whisper Base (قابل تنظیم: tiny, base, small, medium, large)
+- زبان: فارسی (fa)
+- دقت: FP32 (سازگاری CPU)
+- VAD: تشخیص فعالیت صوتی فعال
 
-**Performance Characteristics**:
-- Latency: ~500ms for 3-second audio
-- Accuracy: >90% for clear Persian speech
-- Memory Usage: ~1GB RAM
+**ویژگی‌های عملکرد**:
+- تأخیر: ~500ms برای صوتی 3 ثانیه‌ای
+- دقت: >90% برای گفتار فارسی واضح
+- استفاده از حافظه: ~1GB RAM
 
-### 3. Translator (`src/translator.py`)
+### 3. مترجم (`src/translator.py`)
 
-**Purpose**: Translates Persian text to English using Hugging Face Transformers.
+**هدف**: متن فارسی را با استفاده از Hugging Face Transformers به انگلیسی ترجمه می‌کند.
 
-**Key Responsibilities**:
-- Farsi-to-English machine translation
-- Text preprocessing and tokenization
-- Translation quality optimization
-- Context preservation
+**مسئولیت‌های کلیدی**:
+- ترجمه ماشینی فارسی به انگلیسی
+- پیش‌پردازش متن و tokenization
+- بهینه‌سازی کیفیت ترجمه
+- حفظ زمینه
 
-**Model Configuration**:
-- Model: Helsinki-NLP/opus-mt-fa-en
-- Framework: Hugging Face Transformers
+**پیکربندی مدل**:
+- مدل: Helsinki-NLP/opus-mt-fa-en
+- فریمورک: Hugging Face Transformers
 - Tokenization: SentencePiece
-- Batch Processing: Single sentence optimization
+- پردازش دسته‌ای: بهینه‌سازی جمله واحد
 
-**Translation Pipeline**:
+**خط لوله ترجمه**:
 ```
-Persian Text → Tokenization → Encoder-Decoder → English Text
-```
-
-### 4. TTS Engine (`src/tts_engine.py`)
-
-**Purpose**: Synthesizes English text to speech with American accent using Piper TTS.
-
-**Key Responsibilities**:
-- English text-to-speech synthesis
-- American accent and pronunciation
-- Audio format generation
-- Voice quality optimization
-
-**Model Configuration**:
-- Engine: Piper TTS
-- Voice: American English (configurable)
-- Format: WAV, 16kHz, 16-bit
-- Synthesis: Neural vocoder
-
-**Audio Pipeline**:
-```
-English Text → Phoneme Conversion → Neural Vocoder → Audio Bytes
+متن فارسی → Tokenization → Encoder-Decoder → متن انگلیسی
 ```
 
-## Data Flow Architecture
+### 4. موتور TTS (`src/tts_engine.py`)
 
-### Real-Time Processing Pipeline
+**هدف**: متن انگلیسی را با استفاده از مدل XTTS-v2 و صدای کلون شده کاربر به گفتار تبدیل می‌کند.
+
+**مسئولیت‌های کلیدی**:
+- سنتز متن به گفتار انگلیسی با صدای کاربر
+- کلون کردن صدا از نمونه 6 ثانیه‌ای
+- پشتیبانی از 17 زبان مختلف
+- تولید فرمت صوتی با کیفیت بالا
+
+**پیکربندی مدل**:
+- موتور: XTTS-v2 از Coqui
+- صدا: کلون شده از نمونه کاربر (6 ثانیه)
+- فرمت: WAV، 24kHz، 16-bit
+- سنتز: Neural vocoder با قابلیت کلون صدا
+
+**سخت‌افزار مورد نیاز**:
+- GPU: NVIDIA RTX 3060 یا بالاتر (حداقل 6GB VRAM)
+- RAM: حداقل 16GB، توصیه شده 32GB
+- CPU: Intel i7 یا AMD Ryzen 7
+- فضای ذخیره: 10GB برای مدل
+
+**خط لوله صوتی**:
+```
+متن انگلیسی + نمونه صدای کاربر → XTTS-v2 → Neural Vocoder → بایت‌های صوتی
+```
+
+**قابلیت‌های جدید**:
+- آپلود نمونه صدای کاربر از طریق رابط کاربری
+- کلون صدا در زمان واقعی
+- پشتیبانی از چندین نمونه صدای مختلف
+- حفظ ویژگی‌های صوتی کاربر (تن، لهجه، احساسات)
+
+## معماری جریان داده
+
+### خط لوله پردازش همزمان
 
 ```mermaid
 sequenceDiagram
-    participant M as Microphone
-    participant AH as Audio Handler
-    participant STT as STT Engine
-    participant TR as Translator
-    participant TTS as TTS Engine
-    participant VA as Virtual Audio
+    participant M as میکروفون
+    participant AH as مدیر صوتی
+    participant STT as موتور STT
+    participant TR as مترجم
+    participant TTS as موتور TTS
+    participant VA as صوتی مجازی
     
-    M->>AH: Audio Chunk (1024 samples)
-    AH->>STT: Preprocessed Audio
-    STT->>STT: Whisper Processing
-    STT->>TR: Persian Text
-    TR->>TR: Translation Processing
-    TR->>TTS: English Text
-    TTS->>TTS: Speech Synthesis
-    TTS->>VA: Audio Bytes
-    VA->>VA: Playback
+    M->>AH: Chunk صوتی (1024 نمونه)
+    AH->>STT: صوتی پیش‌پردازش شده
+    STT->>STT: پردازش Whisper
+    STT->>TR: متن فارسی
+    TR->>TR: پردازش ترجمه
+    TR->>TTS: متن انگلیسی
+    TTS->>TTS: سنتز گفتار
+    TTS->>VA: بایت‌های صوتی
+    VA->>VA: پخش
 ```
 
-### Threading Model
+### مدل Threading
 
-The system employs a multi-threaded architecture to ensure real-time performance:
+سیستم از معماری چند thread استفاده می‌کند تا عملکرد همزمان را تضمین کند:
 
-1. **Main Thread**: Application lifecycle management
-2. **Processing Thread**: Core translation pipeline
-3. **Audio Thread**: Continuous audio capture and playback
+1. **Thread اصلی**: مدیریت چرخه حیات برنامه
+2. **Thread پردازش**: خط لوله ترجمه اصلی
+3. **Thread صوتی**: ضبط و پخش مداوم صوتی
 
 ```python
-# Threading Architecture
-Main Thread
-├── Processing Thread (translation pipeline)
-├── Audio Capture Thread (microphone)
-└── Audio Playback Thread (virtual device)
+# معماری Threading
+Thread اصلی
+├── Thread پردازش (خط لوله ترجمه)
+├── Thread ضبط صوتی (میکروفون)
+└── Thread پخش صوتی (دستگاه مجازی)
 ```
 
-## Memory Management
+## مدیریت حافظه
 
-### Model Loading Strategy
+### استراتژی بارگذاری مدل
 
-Models are loaded once during initialization and kept in memory for optimal performance:
+مدل‌ها یک بار در طول راه‌اندازی بارگذاری می‌شوند و برای عملکرد بهینه در حافظه نگه داشته می‌شوند:
 
 ```python
-# Memory allocation per component
-STT Engine:     ~1GB (Whisper Base)
-Translator:     ~500MB (Helsinki-NLP)
-TTS Engine:     ~200MB (Piper TTS)
-Audio Buffers:  ~50MB (circular buffers)
-Total:          ~1.75GB
+# تخصیص حافظه برای هر مؤلفه
+موتور STT:     ~1GB (Whisper Base)
+مترجم:         ~500MB (Helsinki-NLP)
+موتور TTS:     ~4GB (XTTS-v2 + GPU VRAM)
+بافرهای صوتی:  ~50MB (بافرهای دایره‌ای)
+مجموع:          ~5.5GB (بدون احتساب VRAM)
 ```
 
-### Buffer Management
+### مدیریت بافر
 
-- **Audio Input Buffer**: Circular buffer for continuous capture
-- **Processing Buffer**: Temporary storage for translation pipeline
-- **Audio Output Buffer**: Queue for synthesized speech playback
+- **بافر ورودی صوتی**: بافر دایره‌ای برای ضبط مداوم
+- **بافر پردازش**: ذخیره‌سازی موقت برای خط لوله ترجمه
+- **بافر خروجی صوتی**: صف برای پخش گفتار سنتز شده
 
-## Error Handling Architecture
+## معماری مدیریت خطا
 
-### Graceful Degradation
+### تخریب تدریجی
 
-The system implements multiple fallback mechanisms:
+سیستم مکانیزم‌های fallback متعددی پیاده‌سازی می‌کند:
 
-1. **Audio Device Failure**: Automatic fallback to default devices
-2. **Model Loading Error**: Retry with smaller models
-3. **Translation Failure**: Return original text with error flag
-4. **TTS Failure**: Text output as fallback
+1. **شکست دستگاه صوتی**: fallback خودکار به دستگاه‌های پیش‌فرض
+2. **خطای بارگذاری مدل**: تکرار با مدل‌های کوچک‌تر
+3. **شکست ترجمه**: بازگشت متن اصلی با پرچم خطا
+4. **شکست TTS**: خروجی متن به عنوان fallback
 
-### Error Recovery
+### بازیابی خطا
 
 ```python
-# Error handling hierarchy
+# سلسله مراتب مدیریت خطا
 try:
-    # Primary operation
+    # عملیات اصلی
 except ModelError:
-    # Fallback to smaller model
+    # fallback به مدل کوچک‌تر
 except AudioError:
-    # Switch to alternative audio device
+    # تغییر به دستگاه صوتی جایگزین
 except TranslationError:
-    # Return original text
+    # بازگشت متن اصلی
 except TTSError:
-    # Output text instead of audio
+    # خروجی متن به جای صدا
 ```
 
-## Configuration Architecture
+## معماری پیکربندی
 
-### Centralized Configuration
+### پیکربندی متمرکز
 
-All system parameters are managed through `config.py`:
+تمام پارامترهای سیستم از طریق `config.py` مدیریت می‌شوند:
 
 ```python
-# Configuration categories
+# دسته‌بندی پیکربندی
 AUDIO_CONFIG = {
     'sample_rate': 16000,
     'chunk_size': 1024,
@@ -225,77 +237,78 @@ PERFORMANCE_CONFIG = {
 }
 ```
 
-## Scalability Considerations
+## ملاحظات مقیاس‌پذیری
 
-### Horizontal Scaling
+### مقیاس‌پذیری افقی
 
-- **Multi-language Support**: Modular language packs
-- **Model Variants**: Different model sizes for various hardware
-- **Distributed Processing**: Future cloud deployment support
+- **پشتیبانی چندزبانه**: بسته‌های زبان مدولار
+- **انواع مدل**: اندازه‌های مختلف مدل برای سخت‌افزارهای مختلف
+- **پردازش توزیع‌شده**: پشتیبانی آینده از استقرار ابری
 
-### Vertical Scaling
+### مقیاس‌پذیری عمودی
 
-- **GPU Acceleration**: CUDA support for larger models
-- **Memory Optimization**: Dynamic model loading
-- **CPU Optimization**: Multi-core processing
+- **شتاب‌دهی GPU**: پشتیبانی CUDA برای مدل XTTS-v2 (اجباری)
+- **بهینه‌سازی حافظه**: بارگذاری پویای مدل و مدیریت VRAM
+- **بهینه‌سازی CPU**: پردازش چند هسته‌ای
+- **کلون صدا**: پشتیبانی از چندین نمونه صدای مختلف
 
-## Security Architecture
+## معماری امنیت
 
-### Privacy-First Design
+### طراحی حریم خصوصی اول
 
-- **Local Processing**: No data leaves the device
-- **No Network Calls**: Complete offline operation
-- **Memory Cleanup**: Secure buffer clearing
-- **Model Integrity**: Checksum verification
+- **پردازش محلی**: هیچ داده‌ای از دستگاه خارج نمی‌شود
+- **بدون تماس شبکه**: عملکرد کاملاً آفلاین
+- **پاک‌سازی حافظه**: پاک‌سازی امن بافرها
+- **یکپارچگی مدل**: تأیید checksum
 
-### Data Protection
+### حفاظت از داده
 
 ```python
-# Security measures
-- Audio data: Cleared after processing
-- Text data: Not persisted to disk
-- Model data: Read-only access
-- Configuration: Encrypted sensitive settings
+# اقدامات امنیتی
+- داده صوتی: پاک‌سازی پس از پردازش
+- داده متنی: ذخیره‌سازی روی دیسک نمی‌شود
+- داده مدل: دسترسی فقط خواندنی
+- پیکربندی: رمزگذاری تنظیمات حساس
 ```
 
-## Future Architecture Extensions
+## گسترش‌های معماری آینده
 
-### Planned Enhancements
+### بهبودهای برنامه‌ریزی شده
 
-1. **Lip-Sync Integration**: Real-time facial animation
-2. **Multi-Modal Input**: Video + audio processing
-3. **Edge Computing**: Mobile and embedded deployment
-4. **Cloud Hybrid**: Optional cloud processing for complex tasks
+1. **ادغام همگام‌سازی لب**: انیمیشن صورت همزمان
+2. **ورودی چندوجهی**: پردازش ویدیو + صوتی
+3. **محاسبات Edge**: استقرار موبایل و embedded
+4. **ابر ترکیبی**: پردازش ابری اختیاری برای وظایف پیچیده
 
-### Modular Extensions
+### گسترش‌های مدولار
 
 ```mermaid
 graph TB
-    A[Core Translation Pipeline] --> B[Lip-Sync Module]
-    A --> C[Video Processing Module]
-    A --> D[Cloud Integration Module]
-    A --> E[Mobile Optimization Module]
+    A[خط لوله ترجمه اصلی] --> B[ماژول همگام‌سازی لب]
+    A --> C[ماژول پردازش ویدیو]
+    A --> D[ماژول ادغام ابری]
+    A --> E[ماژول بهینه‌سازی موبایل]
     
-    B --> F[Avatar Rendering]
-    C --> G[Real-time Video Translation]
-    D --> H[Hybrid Processing]
-    E --> I[Mobile Deployment]
+    B --> F[رندرینگ آواتار]
+    C --> G[ترجمه ویدیو همزمان]
+    D --> H[پردازش ترکیبی]
+    E --> I[استقرار موبایل]
 ```
 
-## Performance Monitoring
+## نظارت بر عملکرد
 
-### Metrics Collection
+### جمع‌آوری معیارها
 
-- **Latency Tracking**: End-to-end processing time
-- **Resource Monitoring**: CPU, memory, and disk usage
-- **Quality Metrics**: Translation accuracy and audio quality
-- **Error Tracking**: Failure rates and recovery times
+- **ردیابی تأخیر**: زمان پردازش انتها به انتها
+- **نظارت بر منابع**: استفاده از CPU، حافظه و دیسک
+- **معیارهای کیفیت**: دقت ترجمه و کیفیت صوتی
+- **ردیابی خطا**: نرخ شکست و زمان بازیابی
 
-### Optimization Strategies
+### استراتژی‌های بهینه‌سازی
 
-1. **Model Quantization**: Reduced precision for faster inference
-2. **Batch Processing**: Multiple audio chunks processed together
-3. **Caching**: Frequently used translations cached
-4. **Predictive Loading**: Models preloaded based on usage patterns
+1. **کوانتیزاسیون مدل**: کاهش دقت برای استنتاج سریع‌تر
+2. **پردازش دسته‌ای**: چندین chunk صوتی پردازش شده با هم
+3. **کش**: ترجمه‌های مکرر کش شده
+4. **بارگذاری پیش‌بینی‌ای**: مدل‌ها بر اساس الگوهای استفاده پیش‌بارگذاری
 
-This architecture provides a robust foundation for real-time audio translation while maintaining flexibility for future enhancements and optimizations.
+این معماری پایه‌ای محکم برای ترجمه صوتی همزمان فراهم می‌کند و در عین حفظ انعطاف برای بهبودها و بهینه‌سازی‌های آینده.
